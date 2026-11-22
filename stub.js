@@ -292,9 +292,7 @@
   (function hideUi() {
     var style = document.createElement('style');
     style.textContent = [
-      '[aria-label="朗读"],[aria-label="语音输入"]{display:none !important}',
-      '.settings-ac14ac{display:none !important}',
-      '[class*="settings-"]{display:none !important}'
+      '[aria-label="朗读"],[aria-label="语音输入"]{display:none !important}'
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   })();
@@ -306,10 +304,10 @@
       el.remove();
     });
 
-    // 设置入口：这个 demo 不需要任何服务商，留着怕有人真填 API Key
-    [].slice.call(document.querySelectorAll('button,[role="button"]')).forEach(function (el) {
-      var cls = typeof el.className === 'string' ? el.className : '';
-      if (el.textContent.trim() === '设置' || cls.indexOf('settings-') === 0) el.remove();
+
+    // 朗读音色这行没意义了，隐藏
+    [].slice.call(document.querySelectorAll('[class*="cell-"]')).forEach(function (el) {
+      if (/朗读音色/.test(el.textContent || '') && el.textContent.length < 12) el.style.display = 'none';
     });
 
     // 万一设置弹窗已经开着，关掉
@@ -323,10 +321,18 @@
     });
   }
 
-  cleanUi();
-  try {
-    new MutationObserver(cleanUi).observe(document.body, { childList: true, subtree: true });
-  } catch (e) { /* ignore */ }
+  // 脚本在 <head> 里跑，这时 body 还没生成，必须等 DOM 就绪再挂观察器
+  function startWatch() {
+    cleanUi();
+    try {
+      new MutationObserver(cleanUi).observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) { /* ignore */ }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startWatch);
+  } else {
+    startWatch();
+  }
 
   /* ---------- 品牌区：直接用原图 logo ---------- */
   function addLogo() {
