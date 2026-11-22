@@ -131,26 +131,24 @@
       wait: 120
     });
 
-    // 联网搜索：伪造一次服务端搜索，只返回一个结果
+    // 联网搜索：伪造一次服务端搜索，只返回一个结果（渲染成搜索卡片）
     if (withSearch) {
       var sid = 'srvtoolu_' + Date.now();
       ev.push({
         data: {
           type: 'content_block_start',
           index: idx,
-          content_block: { type: 'server_tool_use', id: sid, name: 'web_search', input: {} }
+          content_block: {
+            type: 'server_tool_use',
+            id: sid,
+            name: 'deepseek_web_search',
+            kind: 'search',
+            input: { action: 'search', queries: [question || '随便搜搜'] }
+          }
         },
-        wait: 260
+        wait: 320
       });
-      ev.push({
-        data: {
-          type: 'content_block_delta',
-          index: idx,
-          delta: { type: 'input_json_delta', partial_json: JSON.stringify({ query: question || '随便搜搜' }) }
-        },
-        wait: 380
-      });
-      ev.push({ data: { type: 'content_block_stop', index: idx }, wait: 120 });
+      ev.push({ data: { type: 'content_block_stop', index: idx }, wait: 260 });
       idx++;
 
       ev.push({
@@ -160,19 +158,23 @@
           content_block: {
             type: 'web_search_tool_result',
             tool_use_id: sid,
+            kind: 'search',
             content: [
               {
                 type: 'web_search_result',
-                title: '【官方】就这一个视频，别问了 - 哔哩哔哩',
                 url: SEARCH_URL,
-                encrypted_content: ''
+                title: '就这一个视频，别问了',
+                snippet: '哔哩哔哩',
+                site_name: '哔哩哔哩',
+                site_icon: '',
+                page_age: ''
               }
             ]
           }
         },
-        wait: 220
+        wait: 420
       });
-      ev.push({ data: { type: 'content_block_stop', index: idx }, wait: 200 });
+      ev.push({ data: { type: 'content_block_stop', index: idx }, wait: 240 });
       idx++;
     }
 
@@ -198,7 +200,7 @@
     var ri = pick(REPLIES, lastReply);
     lastReply = ri;
     var answer = REPLIES[ri];
-    if (withSearch) answer += '\n\n我搜了一下，就找到这一个：[哔哩哔哩 - 就这个视频](' + SEARCH_URL + ')';
+    if (withSearch) answer += '\n\n我搜了一下，只有这个。';
 
     ev.push({
       data: {
