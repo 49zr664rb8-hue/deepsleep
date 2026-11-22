@@ -310,15 +310,8 @@
       if (/朗读音色/.test(el.textContent || '') && el.textContent.length < 12) el.style.display = 'none';
     });
 
-    // 万一设置弹窗已经开着，关掉
-    var dialogs = [].slice.call(document.querySelectorAll('[role="dialog"],div'));
-    dialogs.forEach(function (d) {
-      if (d.dataset && d.dataset.dsChecked) return;
-      if (!/输入 API Key 开始使用/.test(d.textContent || '')) return;
-      d.dataset.dsChecked = '1';
-      var close = d.querySelector('[aria-label="关闭"],button:last-of-type');
-      if (close) close.click();
-    });
+    // 说明：数据管理里的 API Key / 服务商地址保留，但填了也没用——
+    // 所有请求在下面的 fetch 里就被拦掉了，一个字节都不会发出去。
   }
 
   // 脚本在 <head> 里跑，这时 body 还没生成，必须等 DOM 就绪再挂观察器
