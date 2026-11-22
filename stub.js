@@ -30,7 +30,7 @@
 
   // 预置假配置：有 key 就不会弹设置框
   try {
-    if (!localStorage.getItem('chat-demo:api-key')) {
+    if (location.search.indexOf('noseed') === -1 && !localStorage.getItem('chat-demo:api-key')) {
       localStorage.setItem('chat-demo:api-key', 'deepsleep');
     }
     if (!localStorage.getItem('chat-demo:location')) {
@@ -310,8 +310,17 @@
       if (/朗读音色/.test(el.textContent || '') && el.textContent.length < 12) el.style.display = 'none';
     });
 
-    // 说明：数据管理里的 API Key / 服务商地址保留，但填了也没用——
-    // 所有请求在下面的 fetch 里就被拦掉了，一个字节都不会发出去。
+    // 数据管理里只留 API Key 输入框，服务商地址 / 模型 这两行去掉
+    var dlg = document.querySelector('[role="dialog"]');
+    if (dlg) {
+      [].slice.call(dlg.querySelectorAll('div,label,span')).forEach(function (el) {
+        var t = (el.textContent || '').trim();
+        if (t !== '服务商地址' && t !== '模型') return;
+        if (el.children.length > 0) return;
+        var box = el.closest('[class*="cell-"]') || el.closest('[class*="row-"]') || el.parentElement;
+        if (box && box !== dlg) box.style.display = 'none';
+      });
+    }
   }
 
   // 脚本在 <head> 里跑，这时 body 还没生成，必须等 DOM 就绪再挂观察器
