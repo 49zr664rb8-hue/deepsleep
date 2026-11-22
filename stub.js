@@ -310,15 +310,22 @@
       if (/朗读音色/.test(el.textContent || '') && el.textContent.length < 12) el.style.display = 'none';
     });
 
-    // 数据管理里只留 API Key 输入框，服务商地址 / 模型 这两行去掉
+    // 数据管理里的「输入 API Key / 服务商地址 / 模型」整块去掉，只留导入导出删除。
+    // 做法：从标题往上找到「最大但不包含导入历史对话」的容器，整块隐藏，
+    // 这样进入编辑态重新渲染也不会露出来。
     var dlg = document.querySelector('[role="dialog"]');
     if (dlg) {
-      [].slice.call(dlg.querySelectorAll('div,label,span')).forEach(function (el) {
-        var t = (el.textContent || '').trim();
-        if (t !== '服务商地址' && t !== '模型') return;
-        if (el.children.length > 0) return;
-        var box = el.closest('[class*="cell-"]') || el.closest('[class*="row-"]') || el.parentElement;
-        if (box && box !== dlg) box.style.display = 'none';
+      [].slice.call(dlg.querySelectorAll('*')).forEach(function (el) {
+        if (el.children.length !== 0) return;
+        if ((el.textContent || '').trim() !== '输入 API Key 开始使用') return;
+        var node = el;
+        var target = null;
+        for (var i = 0; i < 6 && node && node !== dlg; i++) {
+          if (/导入历史对话/.test(node.textContent || '')) break;
+          target = node;
+          node = node.parentElement;
+        }
+        if (target) target.style.display = 'none';
       });
     }
   }
