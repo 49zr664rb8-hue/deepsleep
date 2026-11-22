@@ -285,6 +285,46 @@
     return origFetch ? origFetch(input, init) : Promise.resolve(jsonResponse({}));
   };
 
+  /* 用 CSS 强制隐藏，React 重渲染也压得住 */
+  (function hideUi() {
+    var style = document.createElement('style');
+    style.textContent = [
+      '[aria-label="朗读"],[aria-label="语音输入"]{display:none !important}',
+      '.settings-ac14ac{display:none !important}',
+      '[class*="settings-"]{display:none !important}'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(style);
+  })();
+
+  /* ---------- 去掉用不上的入口：设置 / 朗读 / 语音输入 ---------- */
+  function cleanUi() {
+    // 朗读、语音输入：浏览器里没有系统语音，留着只会让人以为能用
+    [].slice.call(document.querySelectorAll('[aria-label="朗读"],[aria-label="语音输入"]')).forEach(function (el) {
+      el.remove();
+    });
+
+    // 设置入口：这个 demo 不需要任何服务商，留着怕有人真填 API Key
+    [].slice.call(document.querySelectorAll('button,[role="button"]')).forEach(function (el) {
+      var cls = typeof el.className === 'string' ? el.className : '';
+      if (el.textContent.trim() === '设置' || cls.indexOf('settings-') === 0) el.remove();
+    });
+
+    // 万一设置弹窗已经开着，关掉
+    var dialogs = [].slice.call(document.querySelectorAll('[role="dialog"],div'));
+    dialogs.forEach(function (d) {
+      if (d.dataset && d.dataset.dsChecked) return;
+      if (!/输入 API Key 开始使用/.test(d.textContent || '')) return;
+      d.dataset.dsChecked = '1';
+      var close = d.querySelector('[aria-label="关闭"],button:last-of-type');
+      if (close) close.click();
+    });
+  }
+
+  cleanUi();
+  try {
+    new MutationObserver(cleanUi).observe(document.body, { childList: true, subtree: true });
+  } catch (e) { /* ignore */ }
+
   /* ---------- 品牌区：直接用原图 logo ---------- */
   function addLogo() {
     var nodes = [].slice.call(document.querySelectorAll('div,span,a,h1'));
