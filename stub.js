@@ -111,7 +111,7 @@
     return out;
   }
 
-  function buildStream(withSearch, question) {
+  function buildStream(withSearch, withThinking, question) {
     var ev = [];
     var idx = 0;
 
@@ -178,7 +178,8 @@
       idx++;
     }
 
-    // 思考过程：开头固定是「用户彻底怒了」
+    // 思考过程：开头固定是「用户彻底怒了」；没开深度思考就不发
+    if (withThinking) {
     var ti = pick(THOUGHTS, lastThought);
     lastThought = ti;
     var thought = THOUGHTS[ti];
@@ -195,6 +196,7 @@
     });
     ev.push({ data: { type: 'content_block_stop', index: idx }, wait: 220 });
     idx++;
+    }
 
     // 正文
     var ri = pick(REPLIES, lastReply);
@@ -245,6 +247,7 @@
       } catch (e) {}
 
       var withSearch = !!(init && typeof init.body === 'string' && init.body.indexOf('web_search') !== -1);
+      var withThinking = !!(body && body.thinking && body.thinking.type === 'enabled');
       var question = '';
       try {
         var msgs = (body && body.messages) || [];
@@ -258,7 +261,7 @@
         }
       } catch (e) {}
 
-      return Promise.resolve(sseResponse(buildStream(withSearch, question.slice(0, 40))));
+      return Promise.resolve(sseResponse(buildStream(withSearch, withThinking, question.slice(0, 40))));
     }
 
     if (url.indexOf('/models') !== -1) {
